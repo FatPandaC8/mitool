@@ -1,13 +1,111 @@
 package github
 
-type SSHManager struct{}
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 
-func (s *SSHManager) GenerateKey(
-    name string,
-    email string,
-) (string, error)
+	"github.com/FatPandaC8/mitool/internal/config"
+)
 
-func (s *SSHManager) AppendConfig(
-    host string,
-    keyPath string,
-) error
+func GenerateKey(name string) (string, error) {
+
+	home := config.HomeDir()
+
+	keyPath := filepath.Join(
+		home,
+		".ssh",
+		"mitool_"+name,
+	)
+
+
+	err := os.MkdirAll(
+		filepath.Dir(keyPath),
+		0700,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+
+	cmd := exec.Command(
+		"ssh-keygen",
+		"-t",
+		"ed25519",
+		"-C",
+		name,
+		"-f",
+		keyPath,
+		"-N",
+		"",
+	)
+
+
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+
+	fmt.Println(
+		"[github-ssh-account] created:",
+		keyPath,
+	)
+
+	return keyPath, nil
+}
+
+func TestSSH(name string) error {
+
+	host := "github-" + name
+
+	cmd := exec.Command(
+		"ssh",
+		"-T",
+		"git@"+host,
+	)
+
+	// ssh -T returns exit code 1 even on success
+	// because GitHub does not open a shell.
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		// Check output because GitHub success is a special case
+		if len(output) > 0 {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func TestSSHAccount(
+	name string,
+) error {
+
+	store, err := LoadAccounts()
+
+	if err != nil {
+		return err
+	}
+
+
+	for _, acc := range store.Accounts {
+
+		if acc.Name == name {
+
+			return TestSSH(
+				acc.Host,
+			)
+		}
+	}
+
+
+	return fmt.Errorf(
+		"account not found: %s",
+		name,
+	)
+}

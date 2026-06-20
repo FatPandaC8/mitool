@@ -1,4 +1,4 @@
-package gostarter
+package mitool
 
 import _ "embed"
 
