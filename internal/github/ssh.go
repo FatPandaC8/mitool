@@ -9,7 +9,7 @@ import (
 	"github.com/FatPandaC8/mitool/internal/config"
 )
 
-func GenerateKey(name string) (string, error) {
+func GenerateKey(name, email string) (string, error) {
 
 	home := config.HomeDir()
 
@@ -35,18 +35,35 @@ func GenerateKey(name string) (string, error) {
 		"-t",
 		"ed25519",
 		"-C",
-		name,
+		email,
 		"-f",
 		keyPath,
 		"-N",
 		"",
 	)
 
-
 	if err := cmd.Run(); err != nil {
 		return "", err
 	}
 
+	
+	cmd_show := exec.Command(
+		"cat",
+		keyPath+".pub",
+	)
+
+	output, err := cmd_show.CombinedOutput()
+
+	if err != nil {
+		return "", fmt.Errorf(
+			"show key failed: %v\n%s",
+			err,
+			output,
+		)
+	}
+
+
+	fmt.Println(string(output))
 
 	fmt.Println(
 		"[github-ssh-account] created:",

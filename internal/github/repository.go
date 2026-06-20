@@ -34,7 +34,6 @@ func LoadAccounts() (*AccountStore, error) {
 	return &store, err
 }
 
-
 func SaveAccounts(
 	store *AccountStore,
 ) error {
@@ -80,7 +79,6 @@ func RemoveAccount(
 		)
 	}
 
-
 	if !found {
 		return fmt.Errorf(
 			"account not found: %s",
@@ -88,9 +86,27 @@ func RemoveAccount(
 		)
 	}
 
-
 	store.Accounts = remaining
 
-
 	return SaveAccounts(store)
+}
+
+func GetAccount(name string) (*Account, error) {
+	store, err := LoadAccounts()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: use another search
+	for _, acc := range store.Accounts {
+		if acc.Name == name {
+			return &acc, nil
+		}
+	}
+
+	return nil, fmt.Errorf(
+		"[github-ssh-account]: account not found:%s",
+		name,
+	)
 }

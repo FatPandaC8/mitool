@@ -15,7 +15,6 @@ func AddSSHConfig(
 
 	host := "github-" + name
 
-
 	block := fmt.Sprintf(
 		`# BEGIN MITOOL %s
 		Host %s
