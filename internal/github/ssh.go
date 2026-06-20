@@ -52,7 +52,7 @@ func GenerateKey(name, email string) (string, error) {
 		keyPath+".pub",
 	)
 
-	output, err := cmd_show.CombinedOutput()
+	output, err := cmd_show.CombinedOutput() // this capture both stdout and stderr
 
 	if err != nil {
 		return "", fmt.Errorf(
